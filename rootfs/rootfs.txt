@@ -1,0 +1,83 @@
+Create Root Filesystem Strcuture
+
+	First, create a new root directory for our RFS.
+
+#	mkdir /rootfs
+
+	sudo chown -R root:root * // write tis cmd to give super user premission.
+
+	Copy the busybox system files into the root directory.
+
+#	cd /rootfs
+	cp -a /usr/src/toolchain/busybox-1.16.0/_install/* .
+
+	or
+
+	Copy the output folders of busybox to the File-system
+
+#        $(BusyBox_Source)# rsync –a _install/* /rootfs
+
+
+	Create the remaining FHS directories as require.
+
+#	mkdir dev
+#	mkdir -p etc/init.d
+#	mkdir lib
+#	mkdir mnt
+#	mkdir proc
+#	mkdir sys
+#	mkdir -m 777 tmp
+#	mkdir var
+
+
+
+	cd /rootfs/dev
+#	mknod -m 622 console c 5 1
+
+
+
+	create a inittab in /rootfs/etc/init.d(default init  script file)
+                # Startup the system
+                  null::sysinit:/etc/init.d/rcS
+                  ttyS0::respawn:-/bin/sh
+                  null::shutdown:/bin/umount -a -r
+
+
+
+
+
+
+
+
+	Create a rcS job file in the /rootfs/etc/init.d directory to initialize the target system.
+
+	#! /bin/sh
+
+	# Setup the bin file location and export to system PATH
+	PATH=/sbin:/bin:/usr/sbin:/usr/bin
+	umask 022
+	export PATH
+
+	# mount the filesystem directories
+	mount -a
+	mkdir /dev/pts
+	mount -t devpts devpts /dev/pts -o mode=0622
+
+	# create device nodes and directories
+	echo /sbin/mdev>/proc/sys/kernel/hotplug
+	mdev -s
+	mkdir /var/lock
+
+	# start logging utility services
+	klogd
+	syslogd
+
+	# set system clock from RTC
+	hwclock -s
+
+	# set host and config loopback interface
+	ifconfig lo 127.0.0.1
+
+#	chmod 777 rcS
+#	sudo chown -R root:root *
+#	sudo chown -R root:root rcS

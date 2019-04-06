@@ -1,6 +1,6 @@
 # Docker-Workshop
 
-Topics Covering 
+Topics 
 1. Building a containers
 2. Root file System
 3. Networking 
